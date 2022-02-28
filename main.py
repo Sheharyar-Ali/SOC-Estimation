@@ -48,7 +48,6 @@ P = Phat
 # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
 
-
 for i in range(0, len(T)):
     print("STARTING ITERATION", i)
     if i == 0:
@@ -64,9 +63,10 @@ for i in range(0, len(T)):
     if i == 0:
         C = np.array([1, -R1, -R2])
     else:
-        dOCV_dSOC = OCV_60deg(SOC[i-1])[1]
+        dOCV_dSOC = OCV_60deg(SOC[i - 1])[1]
         C = np.array([dOCV_dSOC, -R1, -R2])
-        I[i] = v_measured[i] * ((dt * OCV_60deg(SOC[i-1])[1]) - R0 - (1 - e1) - (1 - e2)) #This is for simulation process
+        I[i] = v_measured[i] * (
+                    (dt * OCV_60deg(SOC[i - 1])[1]) - R0 - (1 - e1) - (1 - e2))  # This is for simulation process
 
     u = I[i]
     CT = np.atleast_2d(C).T  # This is needed to transpose a single row matrix in numpy
@@ -78,15 +78,14 @@ for i in range(0, len(T)):
         xp[0][0] = 1
 
     OCV_SOC_p = OCV_60deg(xp[0][0])[0]
-    Pp = A @ P @ A.T + Q   # Predicting system state error
-    #print("Pp", Pp)
+    Pp = A @ P @ A.T + Q  # Predicting system state error
+    # print("Pp", Pp)
     y = OCV_SOC_p - R0 * u - R1 * xp[1][0] - R2 * xp[2][0]  # Prediction of the output
     Denom = C @ Pp @ CT + R  # single value
     K = (Pp @ CT) * 1 / Denom  # Calculating Kalman gain
     # Correction step
     xc = xp + (K * (v_measured[i] - y))
     Pc = (np.eye(3) - (K * C)) @ Pp
-
 
     SOC[i] = xc[0][0]
     I1[i] = xc[1][0]
