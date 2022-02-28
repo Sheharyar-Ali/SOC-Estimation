@@ -33,6 +33,8 @@ The following steps were then carried out:
 
 
 The full equations for the steps are:
+
 ![Method](Images/Screenshot%20(55).png)
+
 For information on the specific values chosen, refer to the `main.py` or `BatteryParams.py` file
 
