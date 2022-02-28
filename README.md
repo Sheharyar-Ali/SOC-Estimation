@@ -22,8 +22,11 @@ The input, u was [I_cell]
 The output, y is the voltage across the cell, v
 
 The matrices A and B were calculated based on the following equations:
+
 ![A+B](Images/A+B.png)
+
 The matrix C was calculated based on:
+
 ![C](Images/C.png)
 
 The following steps were then carried out:
