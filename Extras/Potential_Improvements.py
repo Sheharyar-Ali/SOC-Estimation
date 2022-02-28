@@ -4,6 +4,10 @@ from OCV_Calculation import OCV_60deg
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
+## This file does not work but rather contains the calculations and matrices needed for a better prediction of the Q matrix
+
+
+params = [R0, R1, R2, C1, C2, Cap] # The parameters that dictate the noise matrix
 # The Process noise matrix assumes that the noise is a result of the parameters used in matrices A and B
 # Q = J*Qp*J^T
 # The differentials for the Jacobian are calculated here:

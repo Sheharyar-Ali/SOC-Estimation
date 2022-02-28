@@ -32,7 +32,6 @@ C2 = 60e3
 R0 = 0.5 * R_internal_total
 Cap = 6.55  # [Ah] assumed to be same as nominal capacity
 
-params = [R0, R1, R2, C1, C2, Cap]
 
 e1 = np.exp(-dt / (R1 * C1))
 e2 = np.exp(-dt / (R2 * C2))
