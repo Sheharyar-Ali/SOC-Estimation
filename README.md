@@ -1,17 +1,18 @@
 
-#Model Explanation
+# Model Explanation
+
 This model uses a Kalman Filter to try and predict what the SOC of the car will be after n iterations. Most of the 
 implementation is based on: https://www.mdpi.com/1996-1073/14/13/3733
 
 
-##Cell model
+## Cell model
 An equivalent circuit model was used that is summarised here:
 ![Model](Images/Model.jpg)
 
 
 This represents what each cell looks like
 
-##State definitions
+## State definitions
 
 The state and output equations are as follow:
 
@@ -49,7 +50,7 @@ The full equations for the steps are:
 
 For information on the specific values chosen, refer to the `main.py` or `BatteryParams.py` file
 
-#Usage 
+# Usage 
 Choose a simulation profile from `Extras/Simulation_profiles.py` to use in `main.py`. In `main.py`, define this function as the variable
 `v_measured` and then run the code.
 
@@ -59,7 +60,7 @@ also use the current that we measure from the car but for simulation purposes, t
 The output will be 3 graphs showing how the voltage changes per iteration, both the actual and calculated one, as well as the error between the measured 
 and calculated values and the SOC that was calculated 
 
-#Improvements
+# Improvements
 1. The model currently assumes that the discharge and charge profile is the same thus ignoring hysterisis
 2. The Process noise matrix, Q should be calculated based on the standard deviations of the parameters used in the state equations.
 However, since we dont have these values, the value of Q is based off estimations.
