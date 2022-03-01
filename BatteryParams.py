@@ -1,6 +1,5 @@
 import numpy as np
-from scipy import interpolate, integrate
-from OCV_Calculation import OCV_60deg, ynew, xvals
+from Data_Import import Time as T
 
 # %% LiPo cell transient model (linear)
 
@@ -20,9 +19,9 @@ from OCV_Calculation import OCV_60deg, ynew, xvals
 #
 #          ^ -------- losses ------ ^
 #
-dt = 100e-3
-Tend = 1600
-T = np.arange(0, Tend, dt)
+dt = T[1]-T[0]
+Tend = T[-1]
+
 
 R_internal_total = 4.2e-3  # assumption based on:
 R1 = 0.2 * R_internal_total

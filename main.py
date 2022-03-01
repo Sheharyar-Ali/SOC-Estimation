@@ -1,9 +1,10 @@
 import numpy as np
 from numpy import random as rng
-from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, Tend
+from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i
 from OCV_Calculation import OCV_60deg_og as OCV_60deg
 import matplotlib.pyplot as plt
 from Extras.Simulation_profiles import V_Quadratic, V_linear
+from Data_Import import V_min
 
 rng.seed(1)
 # states = [SOC,I1,I2]
@@ -22,7 +23,7 @@ I2 = np.zeros_like(T)
 
 
 # For Simulation purposes
-v_measured = V_Quadratic(T) #choose the profile you want from Simulation profiles
+v_measured = V_min #choose the profile you want from Simulation profiles(like a pleb) or choose actual data
 I = np.zeros_like(T)
 ycalc = []
 
@@ -63,6 +64,7 @@ for i in range(0, len(T)):
     if i == 0:
         C = np.array([1, -R1, -R2])
     else:
+        print(SOC[i-1])
         dOCV_dSOC = OCV_60deg(SOC[i - 1])[1]
         C = np.array([dOCV_dSOC, -R1, -R2])
         I[i] = v_measured[i] * (
@@ -99,18 +101,18 @@ for i in range(0, len(T)):
 
 error = v_measured - np.array(ycalc)
 fig, axs = plt.subplots(3, 1, sharex=True)
-axs[0].plot(T[0:16000], v_measured[0:16000], label="Measured")
-axs[0].plot(T[0:16000], ycalc[0:16000], label="Calculated")
+axs[0].plot(T, v_measured, label="Measured")
+axs[0].plot(T, ycalc, label="Calculated")
 axs[0].set_ylabel("Voltage [V}")
 axs[0].legend()
 axs[0].grid()
 
-axs[1].plot(T[0:16000], error[0:16000], label="error")
+axs[1].plot(T, error, label="error")
 axs[1].set_ylabel("error")
 axs[1].legend()
 axs[1].grid()
 
-axs[2].plot(T[0:16000], SOC[0:16000], label="SOC calculated")
+axs[2].plot(T, SOC, label="SOC calculated")
 axs[2].set_ylabel("SOC")
 axs[2].legend()
 axs[2].grid()
