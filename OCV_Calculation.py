@@ -17,7 +17,7 @@ def OCV_60deg_og(SOC):
     return OCV_60deg(SOC), differential(SOC)
 
 
-def OCV_60deg(SOC):
+def OCV_60deg(SOC):  # This function is very unreliable. DO NOT USE
     discharge_linear = np.array([0, 2.3, 30, 70])
     Voltage_linear = np.array([4.2, 4.11, 4.0, 3.87])
     discharge_final = np.array([70, 80, 90, 100])
@@ -54,6 +54,17 @@ def OCV_60deg(SOC):
     return OCV, derivative
 
 
+def SOC_OCV60deg(OCV):
+    Voltage_60deg = [4.2, 4.07, 4, 3.98, 3.95, 3.93, 3.91, 3.89, 3.82, 3.8, 3.76, 3.30]
+    Voltage_60deg = np.array(Voltage_60deg)
+    SOC_c = [1, 0.9, 0.75, 0.6, 0.55, 0.5, 0.4, 0.3, 0.2, 0.15, 0.1, 0]
+    SOC_c = np.array(SOC_c)
+
+    SOC_OCV = interpolate.interp1d(Voltage_60deg, SOC_c, kind="cubic")
+
+    return SOC_OCV(OCV)
+
+
 def plotter(xvals, yvals, yder):
     fig, axs = plt.subplots(2, 1, sharex=True)
     axs[0].plot(xvals, yvals)
@@ -72,4 +83,4 @@ for i in range(0, len(ynew)):
     ynew[i] = OCV_60deg_og(xvals[i])[0]
     yder[i] = OCV_60deg_og(xvals[i])[1]
 
-# plotter(xvals,ynew,yder) #Uncomment this to plot the graph of OCV-SoC
+#plotter(xvals,ynew,yder) #Uncomment this to plot the graph of OCV-SoC
