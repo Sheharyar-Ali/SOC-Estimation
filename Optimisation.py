@@ -1,21 +1,10 @@
+from main import T, dt, Cap, OCV_60deg, e1, e2, R0, R1, R2, R_internal_total, sigma_i
 import numpy as np
-from numpy import random as rng
-from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total
-from OCV_Calculation import OCV_25deg_og as OCV_60deg
-from OCV_Calculation import SOC_OCV25deg
+from OCV_Calculation import OCV_60deg_og as OCV_60deg
+from OCV_Calculation import SOC_OCV60deg
 import matplotlib.pyplot as plt
 from Extras.Simulation_profiles import V_Quadratic, V_linear
 from Data_Import import V_min, Current
-
-rng.seed(1)
-# states = [SOC,I1,I2]
-# parameters = [R0,R1,R2,C1,C2,Discharge_Capacity]
-# input = [I_cell]
-
-# state equation:
-# x_n+1 = A*x_n + B*u_n + Q
-# output equation:
-# y_n = OCV(SOC_n) - R0*I_cell_n - R1*I1_n - R2*I2_n
 
 # DATA ACQUISITION
 SOC = np.zeros_like(T)
@@ -53,9 +42,9 @@ P = Phat
 
 # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
-def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
+def KF_optimisation(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
     for i in range(0, len(T)):
-        print("Percentage completeion:", i / len(T) * 100, "%")
+        # print("Percentage completeion:", i / len(T) * 100, "%")
         if i == 0:
             x = xhat
             P = Phat
@@ -82,6 +71,7 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
 
         # Prediction step
         xp = A @ x + B * u  # Predicting state
+
         if xp[0][0] < 0:
             xp[0][0] = 0
         elif xp[0][0] > 1:
@@ -92,7 +82,6 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
         y = OCV_SOC_p - R0 * u - R1 * xp[1][0] - R2 * xp[2][0]  # Prediction of the output
         Denom = C @ Pp @ CT + R  # single value
         K = (Pp @ CT) * 1 / Denom  # Calculating Kalman gain
-
         # Correction step
         xc = xp + (K * (v_measured[i] - y))
         Pc = (np.eye(3) - (K * C)) @ Pp
@@ -103,41 +92,38 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
         x = xc
 
         ycalc[i] = y
-        SOC_measured[i] = SOC_OCV25deg(v_measured[i])
+        SOC_measured[i] = SOC_OCV60deg(v_measured[i])
     return ycalc, SOC, SOC_measured
 
 
-ycalculated, SOC_calculated, SOC_v_min = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0, R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
-                                            SOC_measured=SOC_measured, ycalc=ycalc)
-#
-error_voltage = abs(v_measured - np.array(ycalc))
-error_SOC = abs(SOC_measured - SOC)
-avg_error_voltage = sum(error_voltage) / len(error_voltage)
-avg_error_SOC = sum(error_SOC) / len(error_SOC)
-print(avg_error_voltage)
-print(avg_error_SOC)
+error_list = []
+avg_error_list = []
+data_fraction = 1
+fraction = int(data_fraction * len(T) - 1)
+T = T[0:fraction]
+v_measured = v_measured[0:fraction]
+I = I[0:fraction]
+ycalc = ycalc[0:fraction]
 
-fig, axs = plt.subplots(4, 1, sharex=True)
-axs[0].plot(T, v_measured, label="Measured")
-axs[0].plot(T, ycalculated, label="Calculated")
-axs[0].set_ylabel("Voltage [V}")
-axs[0].legend()
-axs[0].grid()
+e2_values = np.linspace(np.exp(-dt / (R1 * 1E3)), np.exp(-dt / (R1 * 1E8)), 25)
+for i in range(0, len(e2_values)):
+    e2 = e2_values[i]
+    print("completion:", (i / len(e2_values)) * 100)
+    calc, SOC, SOC_v_measured = KF_optimisation(e1=e1, T=T, xhat=xhat, Phat=Phat, e2=e2, dt=dt, Cap=Cap, R0=R0, R1=R1,
+                                                R2=R2,
+                                                v_measured=v_measured, I=I, SOC=SOC, SOC_measured=SOC_measured,
+                                                ycalc=ycalc)
 
-axs[1].plot(T, error_voltage, label="error")
-axs[1].set_ylabel("absolute error in V")
-axs[1].plot(T,np.full_like(T,avg_error_voltage), label="avg")
-axs[1].legend()
-axs[1].grid()
+    error = abs(calc - v_measured) ** 2
+    error_list.append(error)
+    avg_error_list.append(sum(error) / len(error))
+    if avg_error_list[i] == min(avg_error_list):
+        min_err = avg_error_list[i]
+        min_err_index = i
 
-axs[2].plot(T, SOC_v_min, label="SOC measured")
-axs[2].plot(T, SOC_calculated, label="SOC calculated")
-axs[2].set_ylabel("SOC")
-axs[2].legend()
-axs[2].grid()
-
-axs[3].plot(T, error_SOC, label="error in SOC")
-axs[3].plot(T,np.full_like(T,avg_error_SOC), label="avg")
-axs[3].legend()
-axs[3].grid()
+plt.plot(e2_values, avg_error_list, marker="o")
+print("minimum error", min_err, "at index", min_err_index)
+print("e1 minimum", e2_values[min_err_index])
+print(avg_error_list)
+plt.legend()
 plt.show()

@@ -2,7 +2,17 @@ from scipy import interpolate
 import numpy as np
 from matplotlib import pyplot as plt
 
+def OCV_25deg_og(SOC):
+    Voltage_25deg = [3.30, 3.6, 3.756, 3.8, 3.844, 3.867, 3.889, 3.911, 3.956, 4.044, 4.2]
+    Voltage_25deg = np.array(Voltage_25deg)
+    SOC_c = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    SOC_c = np.array(SOC_c)
 
+    OCV_25deg = interpolate.interp1d(SOC_c, Voltage_25deg, kind="cubic")
+    differential_function = interpolate.InterpolatedUnivariateSpline(SOC_c, Voltage_25deg)
+    differential = differential_function.derivative()
+
+    return OCV_25deg(SOC), differential(SOC)
 # The functions below are two ways of recreating the OCV-SOC curve and its derivatives. The first function seems to work better
 def OCV_60deg_og(SOC):
     Voltage_60deg = [3.30, 3.76, 3.8, 3.82, 3.89, 3.91, 3.93, 3.95, 3.98, 4, 4.07, 4.2]
@@ -64,7 +74,15 @@ def SOC_OCV60deg(OCV):
 
     return SOC_OCV(OCV)
 
+def SOC_OCV25deg(OCV):
+    Voltage_25deg = [4.2, 4.044, 3.956, 3.911, 3.889, 3.867, 3.844, 3.8, 3.756, 3.6, 3.30]
+    Voltage_25deg = np.array(Voltage_25deg)
+    SOC_c = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2,  0.1, 0]
+    SOC_c = np.array(SOC_c)
 
+    SOC_OCV = interpolate.interp1d(Voltage_25deg, SOC_c, kind="cubic")
+
+    return SOC_OCV(OCV)
 def plotter(xvals, yvals, yder):
     fig, axs = plt.subplots(2, 1, sharex=True)
     axs[0].plot(xvals, yvals)
