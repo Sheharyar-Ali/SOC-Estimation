@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import csv
 from OCV_Calculation import plotter
 
-file = open("DUT19_Vmin+current.csv")
+file = open("/home/sheharyar/SOC-Estimation/DUT19_Vmin+current.csv") #the full path is needed to run the Optimisation file
 type(file)
 
 reader = csv.reader(file)

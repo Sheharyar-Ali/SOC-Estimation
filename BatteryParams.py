@@ -24,11 +24,11 @@ Tend = T[-1]
 
 
 R_internal_total = 4.2e-3  # assumption based on:
-R1 = 0.2 * R_internal_total
-C1 = 300
-R2 = 0.3 * R_internal_total
-C2 = 60e3
-R0 = 0.5 * R_internal_total
+R1 = 0.001 #0.2 * R_internal_total
+C1 = 1E3
+R2 = 0.005 #0.3 * R_internal_total/home/sheharyar/SOC-Estimation
+C2 = 3003.94
+R0 = 0.003 #0.5 * R_internal_total
 Cap = 6.55  # [Ah] assumed to be same as nominal capacity
 
 
