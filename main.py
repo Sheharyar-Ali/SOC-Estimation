@@ -97,6 +97,7 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
         xc = xp + (K * (v_measured[i] - y))
         Pc = (np.eye(3) - (K * C)) @ Pp
         SOC[i] = xc[0][0]
+        SOC[i] = SOC_OCV25deg(y)
         I1[i] = xc[1][0]
         I2[i] = xc[2][0]
         P = Pc

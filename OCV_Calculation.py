@@ -98,7 +98,7 @@ xvals = np.linspace(0, 1, 1000)
 ynew = np.zeros_like(xvals)
 yder = np.zeros_like(xvals)
 for i in range(0, len(ynew)):
-    ynew[i] = OCV_60deg_og(xvals[i])[0]
-    yder[i] = OCV_60deg_og(xvals[i])[1]
+    ynew[i] = OCV_25deg_og(xvals[i])[0]
+    yder[i] = OCV_25deg_og(xvals[i])[1]
 
 #plotter(xvals,ynew,yder) #Uncomment this to plot the graph of OCV-SoC

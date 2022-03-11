@@ -17,10 +17,11 @@ Current = []
 for row in reader:
     rows.append(row)
     #print(row)
-    if 0.5 <= float(row[0]) <= 989.5:
+    if 0.5 <= float(row[0]) and row[0] !='' and row[1]!='':
         Time.append(float(row[0])) #filters out the time needed to boot up
         V_min.append(float(row[1]))
         Current.append((float(row[2]) / 1000)/2)
 Time = np.array(Time)
 V_min=np.array(V_min)
 Current = np.array(Current)/2
+
