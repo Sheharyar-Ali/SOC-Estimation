@@ -105,10 +105,14 @@ v_measured = v_measured[0:fraction]
 I = I[0:fraction]
 ycalc = ycalc[0:fraction]
 
-e2_values = np.linspace(np.exp(-dt / (R1 * 1E3)), np.exp(-dt / (R1 * 1E8)), 25)
-for i in range(0, len(e2_values)):
-    e2 = e2_values[i]
-    print("completion:", (i / len(e2_values)) * 100)
+#Optimisation ranges
+R0_values = np.linspace(0,0.002,10)
+R1_values = np.linspace(0,0.01,10)
+
+e2_values = np.linspace(np.exp(-dt / (R2 * 1E3)), np.exp(-dt / (R2 * 1E8)), 10)
+for i in range(0, len(R1_values)):
+    R1 = R1_values[i]
+    print("completion:", (i / len(R1_values)) * 100, R1)
     calc, SOC, SOC_v_measured = KF_optimisation(e1=e1, T=T, xhat=xhat, Phat=Phat, e2=e2, dt=dt, Cap=Cap, R0=R0, R1=R1,
                                                 R2=R2,
                                                 v_measured=v_measured, I=I, SOC=SOC, SOC_measured=SOC_measured,
@@ -121,9 +125,9 @@ for i in range(0, len(e2_values)):
         min_err = avg_error_list[i]
         min_err_index = i
 
-plt.plot(e2_values, avg_error_list, marker="o")
+plt.plot(R1_values, avg_error_list, marker="o")
 print("minimum error", min_err, "at index", min_err_index)
-print("e1 minimum", e2_values[min_err_index])
+print("e1 minimum", R1_values[min_err_index])
 print(avg_error_list)
 plt.legend()
 plt.show()
