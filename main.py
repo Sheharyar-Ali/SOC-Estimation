@@ -113,43 +113,44 @@ def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measu
     return ycalc, SOC, SOC_measured, Energy_used
 
 
-# ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
-#                                                     R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
-#                                                     SOC_measured=SOC_measured, ycalc=ycalc)
-# #
-# error_voltage = abs(v_measured - np.array(ycalc))
-# error_SOC = abs(SOC_measured - SOC)
-# avg_error_voltage = sum(error_voltage) / len(error_voltage)
-# avg_error_SOC = sum(error_SOC) / len(error_SOC)
-# print(avg_error_voltage)
-# print(avg_error_SOC)
+ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
+                                                    R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
+                                                    SOC_measured=SOC_measured, ycalc=ycalc)
 #
-# fig, axs = plt.subplots(3, 1, sharex=True)
-# axs[0].plot(T, v_measured, label="Measured")
-# axs[0].plot(T, ycalculated, label="Calculated")
-# axs[0].set_ylabel("Voltage [V}")
-# axs[0].legend()
-# axs[0].grid()
-#
-# axs[1].plot(T, error_voltage, label="error")
-# axs[1].set_ylabel("absolute error in V")
-# axs[1].plot(T, np.full_like(T, avg_error_voltage), label="avg")
-# axs[1].legend()
-# axs[1].grid()
-#
-# axs[2].plot(T, Energy, label="Energy used")
-# axs[2].set_ylabel("Energy used [J]")
-# axs[2].legend()
-# axs[2].grid()
-#
-# # axs[2].plot(T, SOC_v_min, label="SOC measured")
-# # axs[2].plot(T, SOC_calculated, label="SOC calculated")
-# # axs[2].set_ylabel("SOC")
-# # axs[2].legend()
-# # axs[2].grid()
-# #
-# # axs[3].plot(T, error_SOC, label="error in SOC")
-# # axs[3].plot(T,np.full_like(T,avg_error_SOC), label="avg")
-# # axs[3].legend()
-# # axs[3].grid()
-# plt.show()
+error_voltage = abs(v_measured - np.array(ycalc))
+error_SOC = abs(SOC_measured - SOC)
+avg_error_voltage = sum(error_voltage) / len(error_voltage)
+avg_error_SOC = sum(error_SOC) / len(error_SOC)
+print(avg_error_voltage)
+print(avg_error_SOC)
+
+fig, axs = plt.subplots(5, 1, sharex=True)
+axs[0].plot(T, v_measured, label="Measured")
+axs[0].plot(T, ycalculated, label="Calculated")
+axs[0].set_ylabel("Voltage [V}")
+axs[0].legend()
+axs[0].grid()
+
+axs[1].plot(T, error_voltage, label="error")
+axs[1].set_ylabel("absolute error in V")
+axs[1].plot(T, np.full_like(T, avg_error_voltage), label="avg")
+axs[1].legend()
+axs[1].grid()
+
+axs[2].plot(T, SOC_v_min, label="SOC measured")
+axs[2].plot(T, SOC_calculated, label="SOC calculated")
+axs[2].set_ylabel("SOC")
+axs[2].legend()
+axs[2].grid()
+
+axs[3].plot(T, error_SOC, label="error in SOC")
+axs[3].plot(T,np.full_like(T,avg_error_SOC), label="avg")
+axs[3].set_ylabel("Abs error in SOC")
+axs[3].legend()
+axs[3].grid()
+
+axs[4].plot(T, Energy, label="Energy used")
+axs[4].set_ylabel("Energy used [J]")
+axs[4].legend()
+axs[4].grid()
+plt.show()

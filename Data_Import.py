@@ -24,4 +24,3 @@ for row in reader:
 Time = np.array(Time)
 V_min=np.array(V_min)
 Current = np.array(Current)/2
-
