@@ -1,11 +1,10 @@
 import numpy as np
 import scipy.integrate
-from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total
+from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total, V_min, Current
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
 import matplotlib.pyplot as plt
 from Extras.Simulation_profiles import V_Quadratic, V_linear
-from Data_Import import V_min, Current
 
 # states = [SOC,I1,I2]
 # parameters = [R0,R1,R2,C1,C2,Discharge_Capacity]
@@ -56,7 +55,7 @@ P = Phat
 
 def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
     for i in range(0, len(T)):
-        print("Percentage completeion:", i / len(T) * 100, "%")
+        print("Percentage completion:", i / len(T) * 100, "%")
         if i == 0:
             x = xhat
             P = Phat
@@ -144,7 +143,7 @@ axs[2].legend()
 axs[2].grid()
 
 axs[3].plot(T, error_SOC, label="error in SOC")
-axs[3].plot(T,np.full_like(T,avg_error_SOC), label="avg")
+axs[3].plot(T, np.full_like(T, avg_error_SOC), label="avg")
 axs[3].set_ylabel("Abs error in SOC")
 axs[3].legend()
 axs[3].grid()
