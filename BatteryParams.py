@@ -1,6 +1,7 @@
 import numpy as np
-from Data_Import import Time as T
-
+from Data_Import import Time_FSA as T
+from Data_Import import V_min_FSA as V_min
+from Data_Import import Current_FSA as Current
 # %% LiPo cell transient model (linear)
 
 # electrical model for real LiPo cell:
