@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import random as rng
+import scipy.integrate
 from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from Extras.Simulation_profiles import V_Quadratic, V_linear
 from Data_Import import V_min, Current
 
-rng.seed(1)
 # states = [SOC,I1,I2]
 # parameters = [R0,R1,R2,C1,C2,Discharge_Capacity]
 # input = [I_cell]
@@ -28,6 +27,8 @@ v_measured = V_min  # choose the profile you want from Simulation profiles(like 
 I = Current
 I_calc = v_measured / R_internal_total
 ycalc = np.zeros_like(T)
+Power_used = np.zeros_like(T)
+Energy_used = np.zeros_like(T)
 
 # Noise settings
 # The Process noise matrix assumes that the noise is a result of the parameters used in matrices A and B
@@ -53,7 +54,7 @@ P = Phat
 
 # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
-def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
+def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
     for i in range(0, len(T)):
         print("Percentage completeion:", i / len(T) * 100, "%")
         if i == 0:
@@ -97,7 +98,7 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
         xc = xp + (K * (v_measured[i] - y))
         Pc = (np.eye(3) - (K * C)) @ Pp
         SOC[i] = xc[0][0]
-        SOC[i] = SOC_OCV25deg(y)
+        # SOC[i] = SOC_OCV25deg(y)
         I1[i] = xc[1][0]
         I2[i] = xc[2][0]
         P = Pc
@@ -105,11 +106,16 @@ def KF(e1, T, xhat, Phat,  e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_meas
 
         ycalc[i] = y
         SOC_measured[i] = SOC_OCV25deg(v_measured[i])
-    return ycalc, SOC, SOC_measured
+        Power_used[i] = y * I[i]
+        if i != 0:
+            Energy_calc = scipy.integrate.simpson(Power_used[0:i], T[0:i])
+            Energy_used[i] = Energy_calc
+    return ycalc, SOC, SOC_measured, Energy_used
 
 
-ycalculated, SOC_calculated, SOC_v_min = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0, R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
-                                            SOC_measured=SOC_measured, ycalc=ycalc)
+ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
+                                                    R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
+                                                    SOC_measured=SOC_measured, ycalc=ycalc)
 #
 error_voltage = abs(v_measured - np.array(ycalc))
 error_SOC = abs(SOC_measured - SOC)
@@ -118,7 +124,7 @@ avg_error_SOC = sum(error_SOC) / len(error_SOC)
 print(avg_error_voltage)
 print(avg_error_SOC)
 
-fig, axs = plt.subplots(4, 1, sharex=True)
+fig, axs = plt.subplots(5, 1, sharex=True)
 axs[0].plot(T, v_measured, label="Measured")
 axs[0].plot(T, ycalculated, label="Calculated")
 axs[0].set_ylabel("Voltage [V}")
@@ -127,7 +133,7 @@ axs[0].grid()
 
 axs[1].plot(T, error_voltage, label="error")
 axs[1].set_ylabel("absolute error in V")
-axs[1].plot(T,np.full_like(T,avg_error_voltage), label="avg")
+axs[1].plot(T, np.full_like(T, avg_error_voltage), label="avg")
 axs[1].legend()
 axs[1].grid()
 
@@ -139,6 +145,12 @@ axs[2].grid()
 
 axs[3].plot(T, error_SOC, label="error in SOC")
 axs[3].plot(T,np.full_like(T,avg_error_SOC), label="avg")
+axs[3].set_ylabel("Abs error in SOC")
 axs[3].legend()
 axs[3].grid()
+
+axs[4].plot(T, Energy, label="Energy used")
+axs[4].set_ylabel("Energy used [J]")
+axs[4].legend()
+axs[4].grid()
 plt.show()
