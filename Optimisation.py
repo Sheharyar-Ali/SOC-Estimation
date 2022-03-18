@@ -1,11 +1,9 @@
-from main import T, dt, Cap, OCV_60deg, e1, e2, R0, R1, R2, R_internal_total, sigma_i
+from main import T, dt, Cap, OCV_60deg, e1, e2, R0, R1, R2, R_internal_total, sigma_i,V_min,Current
 import numpy as np
 from OCV_Calculation import OCV_60deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV60deg
 import matplotlib.pyplot as plt
 from Extras.Simulation_profiles import V_Quadratic, V_linear
-from Data_Import import V_min, Current
-
 # DATA ACQUISITION
 SOC = np.zeros_like(T)
 SOC_measured = np.zeros_like(T)
