@@ -15,45 +15,45 @@ from Extras.Simulation_profiles import V_Quadratic, V_linear
 # output equation:
 # y_n = OCV(SOC_n) - R0*I_cell_n - R1*I1_n - R2*I2_n
 
-# DATA ACQUISITION
-SOC = np.zeros_like(T)
-SOC_measured = np.zeros_like(T)
-I1 = np.zeros_like(T)
-I2 = np.zeros_like(T)
 
-# For Simulation purposes
+# Data needed 
 v_measured = V_min  # choose the profile you want from Simulation profiles(like a pleb) or choose actual data
 I = Current
-I_calc = v_measured / R_internal_total
-ycalc = np.zeros_like(T)
-Power_used = np.zeros_like(T)
-Energy_used = np.zeros_like(T)
 
-# Noise settings
-# The Process noise matrix assumes that the noise is a result of the parameters used in matrices A and B
-# Q = J*Qp*J^T
-# Due to a lack of information, the Q matrix is assumed here instead of calculated
+#The entire KF has been made into a function
+def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
 
-Q = np.diag([1E-4 ** 2,
-             1E-3 ** 2,
-             1E-6 ** 2])  # This is an estimation based on https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
+    #Setting arrays
+    ycalc = np.zeros_like(T)
+    Power_used = np.zeros_like(T)
+    Energy_used = np.zeros_like(T)
+    SOC = np.zeros_like(T)
+    SOC_measured = np.zeros_like(T)
+    I1 = np.zeros_like(T)
+    I2 = np.zeros_like(T)
+    # Noise settings
+    # The Process noise matrix assumes that the noise is a result of the parameters used in matrices A and B
+    # Q = J*Qp*J^T
+    # Due to a lack of information, the Q matrix is assumed here instead of calculated
 
-R = sigma_i ** 2  # measurement noise matrix
-# This assumes that the only source of noise in the output equation will be the voltage sensor
+    Q = np.diag([1E-4 ** 2,
+                1E-3 ** 2,
+                1E-6 ** 2])  # This is an estimation based on https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
-# Initialisation
-xhat = np.array([[1.0],
-                 [0.0],
-                 [0.0]])  # state initialisation
-Phat = np.diag([1, 1E-4 ** 2, 1E-4 ** 2])  # initial state error
+    R = sigma_i ** 2  # measurement noise matrix
+    # This assumes that the only source of noise in the output equation will be the voltage sensor
 
-u = I
-P = Phat
+    # Initialisation
+    xhat = np.array([[1.0],
+                    [0.0],
+                    [0.0]])  # state initialisation
+    Phat = np.diag([1, 1E-4 ** 2, 1E-4 ** 2])  # initial state error
+    # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
+
+    u = I
+    P = Phat
 
 
-# These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
-
-def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measured, ycalc):
     for i in range(0, len(T)):
         print("Percentage completion:", i / len(T) * 100, "%")
         if i == 0:
@@ -82,6 +82,8 @@ def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measu
 
         # Prediction step
         xp = A @ x + B * u  # Predicting state
+
+        #This is just to make sure that the program does not crash when using the OVC-SOC relationship
         if xp[0][0] < 0:
             xp[0][0] = 0
         elif xp[0][0] > 1:
@@ -112,16 +114,12 @@ def KF(e1, T, xhat, Phat, e2, dt, Cap, R0, R1, R2, v_measured, I, SOC, SOC_measu
     return ycalc, SOC, SOC_measured, Energy_used
 
 
-ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, xhat=xhat, Phat=Phat, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
-                                                    R1=R1, R2=R2, v_measured=v_measured, I=I, SOC=SOC,
-                                                    SOC_measured=SOC_measured, ycalc=ycalc)
+ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
+                                                    R1=R1, R2=R2, v_measured=v_measured, I=I)
 #
-error_voltage = abs(v_measured - np.array(ycalc))
-error_SOC = abs(SOC_measured - SOC)
+error_voltage = abs(v_measured - np.array(ycalculated))
 avg_error_voltage = sum(error_voltage) / len(error_voltage)
-avg_error_SOC = sum(error_SOC) / len(error_SOC)
 print(avg_error_voltage)
-print(avg_error_SOC)
 
 fig, axs = plt.subplots(3, 1, sharex=True)
 axs[0].plot(T, v_measured, label="Measured")

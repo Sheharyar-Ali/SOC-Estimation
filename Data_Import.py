@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import csv
 from OCV_Calculation import plotter
 
-file_1 = open("/home/sheharyar/SOC-Estimation/DUT19_FSA.csv")  # the full path is needed to run the Optimisation file
-file_2 = open("/home/sheharyar/SOC-Estimation/DUT19_Vmin+current.csv")
+file_1 = open("DUT19_FSA.csv")  # the full path is needed to run the Optimisation file
+file_2 = open("DUT19_Vmin+current.csv")
 type(file_1)
 type(file_2)
 
