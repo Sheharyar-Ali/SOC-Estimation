@@ -60,13 +60,4 @@ also use the current that we measure from the car but for simulation purposes, t
 The output will be 3 graphs showing how the voltage changes per iteration, both the actual and calculated one, as well as the error between the measured 
 and calculated values and the SOC that was calculated 
 
-# Improvements
-1. The model currently assumes that the discharge and charge profile is the same thus ignoring hysterisis
-2. The Process noise matrix, Q should be calculated based on the standard deviations of the parameters used in the state equations.
-However, since we dont have these values, the value of Q is based off estimations.
-   
-3. The relationship between the OCV and the SOC (used in the output equation) is assumed to be the same as the nominal dicharge relationship
-In reality, this needs to be determined experimentally
-   
-These improvements need to be implemented by doing tests on the accumulator which are detailed here: https://www.mdpi.com/1996-1073/14/13/3733
-The exact tests needed are in Section 4.1 and 4.2 of the document
+
