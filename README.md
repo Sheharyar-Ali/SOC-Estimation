@@ -52,12 +52,9 @@ For information on the specific values chosen, refer to the `main.py` or `Batter
 
 # Usage 
 Choose a simulation profile from `Extras/Simulation_profiles.py` to use in `main.py`. In `main.py`, define this function as the variable
-`v_measured` and then run the code.
+`v_measured` and then run the code. Alternatively, in `BatteryParams.py` import the dataset you need
 
-`v_measured` will be the voltage data we get for the cell with the lowest voltage but this step is necessary for the simulation. We will 
-also use the current that we measure from the car but for simulation purposes, this is calculated based on the circuit model above
+the outputs will be displayed in graphs once the code is done running. At the bottom of `main.py`, uncomment out any additional plots you want to see
 
-The output will be 3 graphs showing how the voltage changes per iteration, both the actual and calculated one, as well as the error between the measured 
-and calculated values and the SOC that was calculated 
 
 
