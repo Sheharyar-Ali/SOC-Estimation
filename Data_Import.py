@@ -19,6 +19,7 @@ rows_FSA = []
 Time_FSA = []
 V_min_FSA = []
 Current_FSA = []
+Energy_FSA = []
 for row in reader_FSA:
     rows_FSA.append(row)
     # print(row)
@@ -26,9 +27,11 @@ for row in reader_FSA:
         Time_FSA.append(float(row[0]))  # filters out the time needed to boot up
         V_min_FSA.append(float(row[1]))
         Current_FSA.append((float(row[2]) / 1000))
+        Energy_FSA.append(row[3])
 Time_FSA = np.array(Time_FSA)
 V_min_FSA = np.array(V_min_FSA)
 Current_FSA = np.array(Current_FSA) / 2
+Energy_FSA = np.array(Energy_FSA)
 
 # Importing endurance data
 rows_Endurance = []
@@ -45,9 +48,9 @@ for row in reader_Endurance:
 Time_Endurance = np.array(Time_Endurance)
 V_min_Endurance = np.array(V_min_Endurance)
 Current_Endurance = np.array(Current_Endurance) / 2
-
-# plt.plot(Time_FSA, Current_FSA, label="FSA")
+print(Energy_FSA)
+plt.plot(Time_FSA, Energy_FSA, label="FSA")
 # plt.plot(Time_Endurance, Current_Endurance, label="Endurance")
-# plt.grid()
-# plt.legend()
-# plt.show()
+plt.grid()
+plt.legend()
+plt.show()

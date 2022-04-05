@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.integrate
-from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total, V_min, Current
+from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total, V_min, Current,Energy_FSA
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
 import matplotlib.pyplot as plt
