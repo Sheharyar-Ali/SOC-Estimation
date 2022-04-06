@@ -1,8 +1,7 @@
 import numpy as np
-from Data_Import import Time_FSA as T
-from Data_Import import V_min_FSA as V_min
-from Data_Import import Current_FSA as Current
-from Data_Import import Energy_FSA
+from Data_Import import Data_Choose
+
+T, V_min, Current, Energy_CC = Data_Choose()
 # %% LiPo cell transient model (linear)
 
 # electrical model for real LiPo cell:
@@ -21,18 +20,16 @@ from Data_Import import Energy_FSA
 #
 #          ^ -------- losses ------ ^
 #
-dt = T[1]-T[0]
+dt = T[1] - T[0]
 Tend = T[-1]
 
-
 R_internal_total = 4.2e-3  # assumption based on an old Battery Simulator
-R1 = 0.001 #0.2 * R_internal_total
+R1 = 0.001  # 0.2 * R_internal_total
 C1 = 1E3
-R2 = 0.005 #0.3 * R_internal_total/home/sheharyar/SOC-Estimation
+R2 = 0.005  # 0.3 * R_internal_total/home/sheharyar/SOC-Estimation
 C2 = 11112000.0
-R0 = 0.001 #0.5 * R_internal_total
+R0 = 0.001  # 0.5 * R_internal_total
 Cap = 6.55  # [Ah] assumed to be same as nominal capacity
-
 
 e1 = np.exp(-dt / (R1 * C1))
 e2 = np.exp(-dt / (R2 * C2))

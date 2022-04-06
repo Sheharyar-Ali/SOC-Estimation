@@ -1,9 +1,10 @@
 import numpy as np
 import scipy.integrate
-from BatteryParams import e1, e2, Cap, T, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total, V_min, Current,Energy_FSA
+from BatteryParams import e1, e2, Cap, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total,T,V_min,Current,Energy_CC
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
 import matplotlib.pyplot as plt
+from Data_Import import Data_Choose
 from Extras.Simulation_profiles import V_Quadratic, V_linear
 
 # states = [SOC,I1,I2]
@@ -14,6 +15,8 @@ from Extras.Simulation_profiles import V_Quadratic, V_linear
 # x_n+1 = A*x_n + B*u_n + Q
 # output equation:
 # y_n = OCV(SOC_n) - R0*I_cell_n - R1*I1_n - R2*I2_n
+
+
 
 
 # Data needed 
@@ -149,6 +152,7 @@ axs[1].grid()
 # axs[3].grid()
 
 axs[2].plot(T, Energy, label="Energy used")
+axs[2].plot(T,2*Energy_CC, label="Energy CC")
 axs[2].set_ylabel("Energy used [J]")
 axs[2].legend()
 axs[2].grid()
