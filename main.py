@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.integrate
-from BatteryParams import e1, e2, Cap, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total,T,V_min,Current,Energy_CC
+from BatteryParams import e1, e2, Cap, dt, R0, R1, R2, C1, C2, sigma_i, R_internal_total, T, V_min, Current, Energy_CC
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
 import matplotlib.pyplot as plt
@@ -17,16 +17,14 @@ from Extras.Simulation_profiles import V_Quadratic, V_linear
 # y_n = OCV(SOC_n) - R0*I_cell_n - R1*I1_n - R2*I2_n
 
 
-
-
-# Data needed 
+# Data needed
 v_measured = V_min  # choose the profile you want from Simulation profiles(like a pleb) or choose actual data
 I = Current
 
-#The entire KF has been made into a function
-def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
 
-    #Setting arrays
+# The entire KF has been made into a function
+def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
+    # Setting arrays
     ycalc = np.zeros_like(T)
     Power_used = np.zeros_like(T)
     Energy_used = np.zeros_like(T)
@@ -40,22 +38,21 @@ def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
     # Due to a lack of information, the Q matrix is assumed here instead of calculated
 
     Q = np.diag([1E-4 ** 2,
-                1E-3 ** 2,
-                1E-6 ** 2])  # This is an estimation based on https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
+                 1E-3 ** 2,
+                 1E-6 ** 2])  # This is an estimation based on https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
     R = sigma_i ** 2  # measurement noise matrix
     # This assumes that the only source of noise in the output equation will be the voltage sensor
 
     # Initialisation
     xhat = np.array([[1.0],
-                    [0.0],
-                    [0.0]])  # state initialisation
+                     [0.0],
+                     [0.0]])  # state initialisation
     Phat = np.diag([1, 1E-4 ** 2, 1E-4 ** 2])  # initial state error
     # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
 
     u = I
     P = Phat
-
 
     for i in range(0, len(T)):
         print("Percentage completion:", i / len(T) * 100, "%")
@@ -86,7 +83,7 @@ def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
         # Prediction step
         xp = A @ x + B * u  # Predicting state
 
-        #This is just to make sure that the program does not crash when using the OVC-SOC relationship
+        # This is just to make sure that the program does not crash when using the OVC-SOC relationship
         if xp[0][0] < 0:
             xp[0][0] = 0
         elif xp[0][0] > 1:
@@ -128,7 +125,7 @@ fig, axs = plt.subplots(3, 1, sharex=True)
 axs[0].plot(T, v_measured, label="Measured")
 axs[0].plot(T, ycalculated, label="Calculated")
 axs[0].set_ylabel("Voltage [V]")
-axs[0].set_ylim([3.3,4.2])
+axs[0].set_ylim([3.3, 4.2])
 axs[0].legend()
 axs[0].grid()
 
@@ -141,7 +138,7 @@ axs[0].grid()
 axs[1].plot(T, SOC_v_min, label="SOC measured")
 axs[1].plot(T, SOC_calculated, label="SOC calculated")
 axs[1].set_ylabel("SOC")
-axs[1].set_ylim([0,1])
+axs[1].set_ylim([0, 1])
 axs[1].legend()
 axs[1].grid()
 # 
@@ -152,7 +149,7 @@ axs[1].grid()
 # axs[3].grid()
 
 axs[2].plot(T, Energy, label="Energy used")
-axs[2].plot(T,2*Energy_CC, label="Energy CC")
+axs[2].plot(T, 1/2 * Energy_CC * v_measured, label="Energy CC")
 axs[2].set_ylabel("Energy used [J]")
 axs[2].legend()
 axs[2].grid()
