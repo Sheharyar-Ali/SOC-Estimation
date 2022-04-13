@@ -32,7 +32,7 @@ This can be fixed by determining this relationship experimentally. The accumulat
 Afterwards, its should be allowed to rest and then one can measure the voltage to get the values for the OCV. This should continue until the accumulator
 is drained to get the Discharge curve. The process should be reversed to get the Charge curve
 
-This also gives us values for `η` and `M`
+This also gives us values for `η` and `M` and helps us make Lookup tables for them
 
 ## Problem 4: Create more Lookup Tables
 
