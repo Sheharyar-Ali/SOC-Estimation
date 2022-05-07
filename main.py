@@ -4,6 +4,9 @@ from BatteryParams import e1, e2, Cap, dt, R0, R1, R2, C1, C2, sigma_i, R_intern
 from OCV_Calculation import OCV_25deg_og as OCV_60deg
 from OCV_Calculation import SOC_OCV25deg
 import matplotlib.pyplot as plt
+import sys
+
+
 from Data_Import import Data_Choose
 from Extras.Simulation_profiles import V_Quadratic, V_linear
 
@@ -21,6 +24,9 @@ from Extras.Simulation_profiles import V_Quadratic, V_linear
 v_measured = V_min  # choose the profile you want from Simulation profiles(like a pleb) or choose actual data
 I = Current
 
+thismodule = sys.modules[__name__]
+thismodule.x = 0
+thismodule.P = 0
 
 # The entire KF has been made into a function
 def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
@@ -114,7 +120,108 @@ def KF(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
     return ycalc, SOC, SOC_measured, Energy_used
 
 
-ycalculated, SOC_calculated, SOC_v_min, Energy = KF(T=T, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
+def KF_single(T, e1, e2, dt, Cap, R0, R1, R2, v_measured, I):
+    # Setting arrays
+    ycalc = []
+    Power_used = []
+    Energy_used = []
+    SOC = []
+    SOC_measured = []
+    I1 = []
+    I2 = []
+    # Noise settings
+    # The Process noise matrix assumes that the noise is a result of the parameters used in matrices A and B
+    # Q = J*Qp*J^T
+    # Due to a lack of information, the Q matrix is assumed here instead of calculated
+
+    Q = np.diag([1E-4 ** 2,
+                 1E-3 ** 2,
+                 1E-6 ** 2])  # This is an estimation based on https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
+
+    R = sigma_i ** 2  # measurement noise matrix
+    # This assumes that the only source of noise in the output equation will be the voltage sensor
+
+    # Initialisation
+    xhat = np.array([[1.0],
+                     [0.0],
+                     [0.0]])  # state initialisation
+    Phat = np.diag([1, 1E-4 ** 2, 1E-4 ** 2])  # initial state error
+    # These values are based off estimates from: https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/2560145
+
+    u = I
+    P = Phat
+
+    for i in range(0, len(T)):
+        kf_single_input(ycalc, xhat, Phat, SOC, I[i], R, Q, I1, I2, SOC_measured, Power_used, Energy_used, v_measured[i], T[0:i])
+    return ycalc, SOC, SOC_measured, Energy_used
+
+
+def kf_single_input(ycalc, xhat, Phat, SOC, newI, R, Q, I1, I2, SOC_measured, Power_used, Energy_used, v_measured_new, T_newrange):
+    if(len(ycalc) % 500 == 0):
+        print("Percentage completion:", len(ycalc) / len(T) * 100, "%")
+    if len(ycalc) == 0:
+        thismodule.x = xhat
+        thismodule.P = Phat
+
+    # Matrix computation
+    # The A and B matrices for the state space system are calculated here
+    A = np.diag([1, e1, e2])
+    B = np.array([[-dt / (3600 * Cap)],
+                  [(1 - e1)],
+                  [(1 - e2)]])
+
+    if len(ycalc) == 0:
+        C = np.array([1, -R1, -R2])
+    else:
+        # print(SOC[i-1])
+        dOCV_dSOC = OCV_60deg(SOC[len(ycalc)-1])[1]
+        C = np.array([dOCV_dSOC, -R1, -R2])
+        # I_calc[i] = v_measured[i] * (
+        #        (dt * OCV_60deg(SOC[i - 1])[1]) - R0 - (1 - e1) - (1 - e2))  # This calculates the current based
+        # on the voltage for simulation purposes
+
+    u = newI
+    CT = np.atleast_2d(C).T  # This is needed to transpose a single row matrix in numpy
+
+    # Prediction step
+    xp = A @ thismodule.x + B * u  # Predicting state
+
+    # This is just to make sure that the program does not crash when using the OVC-SOC relationship
+    if xp[0][0] < 0:
+        xp[0][0] = 0
+    elif xp[0][0] > 1:
+        xp[0][0] = 1
+
+    OCV_SOC_p = OCV_60deg(xp[0][0])[0]
+    Pp = A @ thismodule.P @ A.T + Q  # Predicting system state error
+    y = OCV_SOC_p - R0 * u - R1 * xp[1][0] - R2 * xp[2][0]  # Prediction of the output
+    Denom = C @ Pp @ CT + R  # single value
+    K = (Pp @ CT) * 1 / Denom  # Calculating Kalman gain
+
+    # Correction step
+    xc = xp + (K * (v_measured_new - y))
+    Pc = (np.eye(3) - (K * C)) @ Pp
+    SOC.append(xc[0][0])
+    # SOC[i] = SOC_OCV25deg(y)
+    I1.append(xc[1][0])
+    I2.append(xc[2][0])
+    thismodule.P = Pc
+    thismodule.x = xc
+
+    ycalc.append(y)
+    SOC_measured.append(SOC_OCV25deg(v_measured_new))
+    Power_used.append(y * newI)
+    if len(ycalc) > 1:
+        # Power_used_array = np.zeros(len(ycalc))
+        # for i in range(len(ycalc)):
+        #     Power_used_array[i] = Power_used.pop(i)
+        #     Power_used.insert(i, Power_used_array[i])
+
+        Energy_calc = scipy.integrate.simpson(Power_used[0:(len(ycalc)-1)], T_newrange)
+        Energy_used.append(Energy_calc)
+
+
+ycalculated, SOC_calculated, SOC_v_min, Energy = KF_single(T=T, e1=e1, e2=e2, dt=dt, Cap=Cap, R0=R0,
                                                     R1=R1, R2=R2, v_measured=v_measured, I=I)
 #
 error_voltage = abs(v_measured - np.array(ycalculated))
@@ -149,7 +256,7 @@ axs[1].grid()
 # axs[3].grid()
 
 axs[2].plot(T, Energy, label="Energy used")
-axs[2].plot(T, 1/2 * Energy_CC * v_measured, label="Energy CC")
+axs[2].plot(T, 1 / 2 * Energy_CC * v_measured, label="Energy CC")
 axs[2].set_ylabel("Energy used [J]")
 axs[2].legend()
 axs[2].grid()
