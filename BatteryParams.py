@@ -1,7 +1,7 @@
 import numpy as np
 from Data_Import import Data_Choose
 
-T, V_min, Current, Energy_CC = Data_Choose()
+# T, V_min, Current, Energy_CC = Data_Choose()
 # %% LiPo cell transient model (linear)
 
 # electrical model for real LiPo cell:
@@ -20,8 +20,10 @@ T, V_min, Current, Energy_CC = Data_Choose()
 #
 #          ^ -------- losses ------ ^
 #
-dt = T[1] - T[0]
+# dt = T[1] - T[0]
 Tend = T[-1]
+
+dt = 0.004;
 
 R_internal_total = 4.2e-3  # assumption based on an old Battery Simulator
 R1 = 0.001  # 0.2 * R_internal_total
